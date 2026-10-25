@@ -6,8 +6,16 @@ import { readImage } from './readImage'
 import { saveReport, getReports, deleteReport } from './reportStorage'
 import { loadCareData, saveCareData, createCareId } from './careStorage'
 import AppShell from './components/AppShell'
+import DailyCheckIn from './features/wellbeing/DailyCheckIn'
+import {
+  loadCheckIns,
+  saveCheckIns,
+  moodFor,
+  localDateKey,
+} from './wellbeingStorage'
 import './App.css'
 import './shell.css'
+import './features/wellbeing/wellbeing.css'
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
@@ -168,6 +176,9 @@ function App() {
     initialCareData.calendarEvents
   )
   const [storageWarning, setStorageWarning] = useState('')
+
+  // Daily check-ins (stored separately from care data)
+  const [checkIns, setCheckIns] = useState(() => loadCheckIns())
 
   // Calendar
   const [selectedDate, setSelectedDate] = useState(todayISO)
@@ -1325,6 +1336,13 @@ function App() {
       label: 'Today',
       items: [
         { id: 'Home', label: 'Home', icon: 'home', primary: true },
+        {
+          id: 'Check-in',
+          label: 'Daily Check-in',
+          shortLabel: 'Check-in',
+          icon: 'checkin',
+          primary: true,
+        },
       ],
     },
     {
@@ -1348,12 +1366,30 @@ function App() {
           label: 'My Care Card',
           shortLabel: 'Care Card',
           icon: 'careCard',
-          primary: true,
           badge: openQuestions || null,
         },
       ],
     },
   ]
+
+  function handleSaveCheckIn(entry) {
+    const next = [entry, ...checkIns]
+    const saved = saveCheckIns(next)
+
+    if (saved) setCheckIns(next)
+    return saved
+  }
+
+  function handleDeleteCheckIn(id) {
+    const next = checkIns.filter(entry => entry.id !== id)
+
+    if (saveCheckIns(next)) setCheckIns(next)
+  }
+
+  const todaysCheckIn = checkIns.find(
+    entry => localDateKey(entry.timestamp) === todayISO()
+  )
+  const todaysMood = todaysCheckIn ? moodFor(todaysCheckIn.mood) : null
 
   function handleNavigate(tab) {
     setActiveTab(tab)
@@ -1411,6 +1447,30 @@ function App() {
               </div>
             </section>
 
+            <section className="home-checkin">
+              <span className="home-checkin-emoji" aria-hidden="true">
+                {todaysMood ? todaysMood.emoji : '🌤️'}
+              </span>
+              <div>
+                <h3>
+                  {todaysMood
+                    ? `Today you're feeling ${todaysMood.label.toLowerCase()}`
+                    : 'How are you feeling today?'}
+                </h3>
+                <p>
+                  {todaysMood
+                    ? 'Thank you for checking in with yourself.'
+                    : 'Take a quiet minute for a daily check-in.'}
+                </p>
+              </div>
+              <button
+                className="primary-button"
+                onClick={() => handleNavigate('Check-in')}
+              >
+                {todaysMood ? 'Open check-in' : 'Check in now'}
+              </button>
+            </section>
+
             <section className="section-heading">
               <h2>Your care, at a glance</h2>
               <p>Everything important, right where you need it.</p>
@@ -1460,6 +1520,17 @@ function App() {
               <span className="love-heart">♡</span>
             </section>
           </>
+        )}
+
+        {/* DAILY CHECK-IN */}
+
+        {activeTab === 'Check-in' && (
+          <DailyCheckIn
+            checkIns={checkIns}
+            todayKey={todayISO()}
+            onSave={handleSaveCheckIn}
+            onDelete={handleDeleteCheckIn}
+          />
         )}
 
         {/* REPORTS */}
