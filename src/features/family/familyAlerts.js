@@ -9,6 +9,7 @@ export function buildFamilyAlerts({
   recoveryLogs,
   checkIns,
   screenings,
+  nurseLog,
   todayKey,
   nowMs,
 }) {
@@ -120,6 +121,33 @@ export function buildFamilyAlerts({
         'Leave small, easy snacks within reach',
         'Make her a warm, simple meal',
       ],
+    })
+  }
+
+  // Nurse AI Vision photo check from today (an AI observation only)
+  if (
+    nurseLog &&
+    localDateKey(nurseLog.timestamp) === todayKey &&
+    ['caution', 'urgent'].includes(nurseLog.alert_level)
+  ) {
+    alerts.push({
+      level: 'medium',
+      tag: 'AI PHOTO CHECK',
+      title:
+        nurseLog.ai_analysis_type === 'nutrition'
+          ? 'Her meal may need a boost'
+          : 'She may be very tired',
+      message: `From her Nurse AI Vision photo check today (an AI observation, not a diagnosis): "${nurseLog.ai_insight_text}"`,
+      actions:
+        nurseLog.ai_analysis_type === 'nutrition'
+          ? [
+              'Make her a balanced meal with some protein',
+              'Keep water and snacks within her reach',
+            ]
+          : [
+              'Take over the next feed or baby care so she can sleep',
+              'Keep the house calm so she can rest',
+            ],
     })
   }
 

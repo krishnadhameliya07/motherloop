@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { createCareId } from '../../careStorage'
+import NurseVision from './NurseVision'
 import {
   SYMPTOMS,
   APPETITE_LEVELS,
@@ -94,6 +95,8 @@ export default function RecoveryTracker({ logs, todayKey, onSave, onDelete }) {
         Log how your body feels today. Keeping track makes it easier to notice
         changes and to describe them to your doctor.
       </p>
+
+      <NurseVision />
 
       {assessment.hasRedFlag && (
         <div

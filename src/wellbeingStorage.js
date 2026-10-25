@@ -268,3 +268,39 @@ export function isBreathingActive() {
     return false
   }
 }
+
+// --------------------------------------------------
+// Latest Nurse AI Vision result (the photo itself is never stored)
+// --------------------------------------------------
+
+const NURSE_KEY = 'motherloop-nurse-v1'
+
+export function saveNurseLog(result) {
+  try {
+    window.localStorage.setItem(
+      NURSE_KEY,
+      JSON.stringify({ ...result, timestamp: new Date().toISOString() })
+    )
+  } catch (error) {
+    console.error('Could not save nurse check:', error)
+  }
+}
+
+export function loadNurseLog() {
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(NURSE_KEY) || 'null')
+
+    if (
+      stored &&
+      typeof stored.timestamp === 'string' &&
+      typeof stored.ai_insight_text === 'string' &&
+      ['stable', 'caution', 'urgent'].includes(stored.alert_level)
+    ) {
+      return stored
+    }
+  } catch {
+    // ignore unreadable data
+  }
+
+  return null
+}
