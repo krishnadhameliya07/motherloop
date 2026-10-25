@@ -22,11 +22,37 @@ function BrandMark() {
   )
 }
 
+// Switch between Mother view and Family Circle view.
+function ModeSwitch({ mode, onModeChange }) {
+  return (
+    <div className="mode-switch" role="group" aria-label="View as">
+      <button
+        type="button"
+        className={mode === 'mother' ? 'active' : ''}
+        aria-pressed={mode === 'mother'}
+        onClick={() => onModeChange('mother')}
+      >
+        🤱 Mother
+      </button>
+      <button
+        type="button"
+        className={mode === 'family' ? 'active' : ''}
+        aria-pressed={mode === 'family'}
+        onClick={() => onModeChange('family')}
+      >
+        🛡️ Family
+      </button>
+    </div>
+  )
+}
+
 export default function AppShell({
   navGroups,
   activeTab,
   onNavigate,
   className = '',
+  mode,
+  onModeChange,
   children,
 }) {
   const [moreOpen, setMoreOpen] = useState(false)
@@ -89,6 +115,10 @@ export default function AppShell({
           ))}
         </nav>
 
+        {onModeChange && (
+          <ModeSwitch mode={mode} onModeChange={onModeChange} />
+        )}
+
         <div className="sidebar-footer">
           <span className="privacy-dot" aria-hidden="true" />
           Your data stays in this browser
@@ -101,7 +131,11 @@ export default function AppShell({
             <BrandMark />
             <strong>MotherLoop</strong>
           </div>
-          <span className="topbar-title">{activeItem?.label}</span>
+          {onModeChange ? (
+            <ModeSwitch mode={mode} onModeChange={onModeChange} />
+          ) : (
+            <span className="topbar-title">{activeItem?.label}</span>
+          )}
         </header>
 
         {children}
