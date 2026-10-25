@@ -19,6 +19,7 @@ import {
   EncouragementBanner,
 } from './features/family/FamilyCircle'
 import { loadMode, saveMode } from './familyStorage'
+import VisitSummary from './features/summary/VisitSummary'
 import {
   loadCheckIns,
   saveCheckIns,
@@ -35,6 +36,7 @@ import './features/wellbeing/wellbeing.css'
 import './features/community/community.css'
 import './features/companion/companion.css'
 import './features/family/family.css'
+import './features/summary/summary.css'
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
@@ -1444,6 +1446,12 @@ function App() {
           icon: 'careCard',
           badge: openQuestions || null,
         },
+        {
+          id: 'Summary',
+          label: 'Doctor Visit Summary',
+          shortLabel: 'Summary',
+          icon: 'summary',
+        },
       ],
     },
     {
@@ -1567,12 +1575,31 @@ function App() {
       navGroups={navGroups}
       activeTab={activeTab}
       onNavigate={handleNavigate}
-      className={activeTab === 'My Care Card' ? 'printing-care-card' : ''}
+      className={
+        activeTab === 'My Care Card'
+          ? 'printing-care-card'
+          : activeTab === 'Summary'
+            ? 'printing-summary'
+            : ''
+      }
       mode={mode}
       onModeChange={handleModeChange}
     >
       <main className="content">
         {mode === 'mother' && <EncouragementBanner />}
+
+        {/* DOCTOR VISIT SUMMARY */}
+
+        {mode === 'mother' && activeTab === 'Summary' && (
+          <VisitSummary
+            todayKey={todayISO()}
+            checkIns={checkIns}
+            recoveryLogs={recoveryLogs}
+            screenings={screenings}
+            careItems={careItems}
+            calendarEvents={calendarEvents}
+          />
+        )}
 
         {/* FAMILY CIRCLE */}
 
