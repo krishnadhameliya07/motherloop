@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { readPdf } from './readPdf'
 import { readImage } from './readImage'
@@ -12,6 +12,13 @@ import WellnessCheck from './features/wellbeing/WellnessCheck'
 import CalmCorner from './features/wellbeing/CalmCorner'
 import CommunityForum from './features/community/CommunityForum'
 import CompanionChat from './features/companion/CompanionChat'
+import {
+  FamilyAlerts,
+  FamilyChecklist,
+  FamilyLearn,
+  EncouragementBanner,
+} from './features/family/FamilyCircle'
+import { loadMode, saveMode } from './familyStorage'
 import {
   loadCheckIns,
   saveCheckIns,
@@ -27,6 +34,7 @@ import './shell.css'
 import './features/wellbeing/wellbeing.css'
 import './features/community/community.css'
 import './features/companion/companion.css'
+import './features/family/family.css'
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
@@ -157,7 +165,11 @@ function createEmptyCareForm(category = 'instruction', source = '') {
 }
 
 function App() {
-  const [activeTab, setActiveTab] = useState('Home')
+  // Mother view or Family Circle view (same device, as in Fourth Trimester)
+  const [mode, setMode] = useState(() => loadMode())
+  const [activeTab, setActiveTab] = useState(() =>
+    loadMode() === 'family' ? 'Family' : 'Home'
+  )
 
   // Existing reports and explanations
   const [reports, setReports] = useState([])
@@ -1348,7 +1360,54 @@ function App() {
 
   // Tab ids are unchanged from the original navigation, so every
   // existing `activeTab === '...'` check keeps working.
-  const navGroups = [
+  // Re-read wellbeing data saved by the other view or another tab.
+  const handleRefreshFromStorage = useCallback(() => {
+    setCheckIns(loadCheckIns())
+    setRecoveryLogs(loadRecoveryLogs())
+    setScreenings(loadScreenings())
+  }, [])
+
+  function handleModeChange(nextMode) {
+    if (nextMode === mode) return
+
+    saveMode(nextMode)
+    setMode(nextMode)
+    setActiveTab(nextMode === 'family' ? 'Family' : 'Home')
+    setMessage('')
+    handleRefreshFromStorage()
+    window.scrollTo({ top: 0 })
+  }
+
+  const familyNavGroups = [
+    {
+      label: 'Family Circle',
+      items: [
+        {
+          id: 'Family',
+          label: 'Smart Alerts',
+          shortLabel: 'Alerts',
+          icon: 'alerts',
+          primary: true,
+        },
+        {
+          id: 'Family Checklist',
+          label: 'Care Checklist',
+          shortLabel: 'Checklist',
+          icon: 'checklist',
+          primary: true,
+        },
+        {
+          id: 'Family Learn',
+          label: 'Understanding Postpartum',
+          shortLabel: 'Learn',
+          icon: 'learn',
+          primary: true,
+        },
+      ],
+    },
+  ]
+
+  const motherNavGroups = [
     {
       label: 'Today',
       items: [
@@ -1494,6 +1553,8 @@ function App() {
   )
   const todaysMood = todaysCheckIn ? moodFor(todaysCheckIn.mood) : null
 
+  const navGroups = mode === 'family' ? familyNavGroups : motherNavGroups
+
   function handleNavigate(tab) {
     setActiveTab(tab)
     setMessage('')
@@ -1507,8 +1568,30 @@ function App() {
       activeTab={activeTab}
       onNavigate={handleNavigate}
       className={activeTab === 'My Care Card' ? 'printing-care-card' : ''}
+      mode={mode}
+      onModeChange={handleModeChange}
     >
       <main className="content">
+        {mode === 'mother' && <EncouragementBanner />}
+
+        {/* FAMILY CIRCLE */}
+
+        {mode === 'family' && activeTab === 'Family' && (
+          <FamilyAlerts
+            checkIns={checkIns}
+            recoveryLogs={recoveryLogs}
+            screenings={screenings}
+            todayKey={todayISO()}
+            onRefresh={handleRefreshFromStorage}
+          />
+        )}
+
+        {mode === 'family' && activeTab === 'Family Checklist' && (
+          <FamilyChecklist todayKey={todayISO()} />
+        )}
+
+        {mode === 'family' && activeTab === 'Family Learn' && <FamilyLearn />}
+
         {message && activeTab !== 'My Reports' && (
           <p className="status-message global-message" role="status">
             {message}
@@ -2877,7 +2960,7 @@ function App() {
         )}
       </main>
 
-      <CompanionChat />
+      {mode === 'mother' && <CompanionChat />}
     </AppShell>
   )
 }

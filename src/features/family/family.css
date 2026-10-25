@@ -1,0 +1,290 @@
+/* Family Circle (from Fourth Trimester) */
+
+.family-breathing {
+  margin: 20px 0 0;
+  padding: 13px 16px;
+  border-radius: 14px;
+  background: #e8f1ff;
+  color: #24456e;
+  font-size: 14px;
+}
+
+.family-alert {
+  margin: 20px 0 0;
+  padding: 22px 24px;
+  border: 2px solid;
+  border-radius: 22px;
+}
+
+.family-alert h3 {
+  margin: 6px 0 8px;
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+}
+
+.family-alert p {
+  margin: 0 0 14px;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.family-alert ul {
+  margin: 6px 0 0;
+  padding-left: 20px;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.family-alert-tag,
+.family-actions-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.3px;
+  opacity: 0.8;
+}
+
+.family-alert.level-urgent {
+  border-color: #b3261e;
+  background: #b3261e;
+  color: white;
+}
+
+.family-alert.level-high {
+  border-color: #f0c3bd;
+  background: #fff1ef;
+  color: #8c2a1f;
+}
+
+.family-alert.level-medium {
+  border-color: #ead6b3;
+  background: #fff7e8;
+  color: #6b4d1d;
+}
+
+.family-alert.level-low {
+  border-color: #f2dce5;
+  background: #fff6f9;
+  color: #7a3a58;
+}
+
+.family-alert.level-ok {
+  border-color: #c9e8d6;
+  background: #ecf8f1;
+  color: #2f6f4c;
+}
+
+.family-others {
+  margin-top: 22px;
+}
+
+.family-others h3 {
+  margin: 0 0 10px;
+  color: var(--pink-dark);
+  font-family: 'Playfair Display', serif;
+}
+
+.family-mini-alert {
+  margin-bottom: 10px;
+  padding: 13px 15px;
+  border-left: 4px solid;
+  border-radius: 12px;
+  background: white;
+  font-size: 13px;
+}
+
+.family-mini-alert p {
+  margin: 4px 0;
+  color: #5e4255;
+}
+
+.family-mini-alert span {
+  color: var(--muted);
+}
+
+.family-mini-alert.level-urgent,
+.family-mini-alert.level-high {
+  border-color: #c4473b;
+}
+
+.family-mini-alert.level-medium {
+  border-color: #e0a443;
+}
+
+.family-mini-alert.level-low {
+  border-color: #e7a2bd;
+}
+
+.family-encourage h3 {
+  margin: 0;
+  color: var(--pink-dark);
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+}
+
+.encourage-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.encourage-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #fff8fa;
+}
+
+.encourage-item span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.encourage-item strong {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.family-encourage .status-message {
+  margin: 14px 0 0;
+}
+
+.checklist-progress-row {
+  display: flex;
+  justify-content: space-between;
+  color: var(--pink-dark);
+  font-size: 14px;
+}
+
+.checklist-progress-row span {
+  color: var(--muted);
+}
+
+.checklist-items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.awareness-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.awareness-card {
+  padding: 20px;
+  border: 1px solid #f2dce5;
+  border-radius: 18px;
+  background: white;
+}
+
+.awareness-card > span {
+  font-size: 26px;
+}
+
+.awareness-card h3 {
+  margin: 8px 0;
+  color: var(--pink-dark);
+  font-family: 'Playfair Display', serif;
+  font-size: 19px;
+}
+
+.awareness-card p {
+  margin: 0;
+  color: #5e4255;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* Mother: encouragement banner */
+
+.encouragement-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #e96e94, #ce4674);
+  color: white;
+  box-shadow: 0 10px 24px #d94f7a33;
+}
+
+.encouragement-banner div {
+  flex: 1;
+  min-width: 0;
+}
+
+.encouragement-banner span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+}
+
+.encouragement-banner p {
+  margin: 6px 0 0;
+  font-family: 'Playfair Display', serif;
+  font-size: 19px;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.encouragement-banner small {
+  display: block;
+  margin-top: 6px;
+  opacity: 0.85;
+}
+
+/* Mode switch (in the app shell) */
+
+.mode-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-top: 16px;
+  padding: 4px;
+  border-radius: 12px;
+  background: #f6eaf0;
+}
+
+.mode-switch button {
+  padding: 8px 6px;
+  border-radius: 9px;
+  background: transparent;
+  color: #6d4a61;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.mode-switch button:hover {
+  transform: none;
+}
+
+.mode-switch button.active {
+  background: white;
+  color: var(--pink-dark);
+  box-shadow: 0 2px 6px #9b597222;
+}
+
+.topbar .mode-switch {
+  margin-top: 0;
+}
+
+@media (max-width: 540px) {
+  .awareness-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .encourage-item {
+    flex-wrap: wrap;
+  }
+}
