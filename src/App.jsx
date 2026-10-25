@@ -8,11 +8,14 @@ import { loadCareData, saveCareData, createCareId } from './careStorage'
 import AppShell from './components/AppShell'
 import DailyCheckIn from './features/wellbeing/DailyCheckIn'
 import RecoveryTracker from './features/wellbeing/RecoveryTracker'
+import WellnessCheck from './features/wellbeing/WellnessCheck'
 import {
   loadCheckIns,
   saveCheckIns,
   loadRecoveryLogs,
   saveRecoveryLogs,
+  loadScreenings,
+  saveScreenings,
   moodFor,
   localDateKey,
 } from './wellbeingStorage'
@@ -185,6 +188,9 @@ function App() {
 
   // Recovery tracker logs (one per day)
   const [recoveryLogs, setRecoveryLogs] = useState(() => loadRecoveryLogs())
+
+  // Wellness check (EPDS) results
+  const [screenings, setScreenings] = useState(() => loadScreenings())
 
   // Calendar
   const [selectedDate, setSelectedDate] = useState(todayISO)
@@ -1385,6 +1391,12 @@ function App() {
           shortLabel: 'Recovery',
           icon: 'recovery',
         },
+        {
+          id: 'Wellness',
+          label: 'Wellness Check',
+          shortLabel: 'Wellness',
+          icon: 'wellness',
+        },
       ],
     },
   ]
@@ -1418,6 +1430,47 @@ function App() {
     const next = recoveryLogs.filter(entry => entry.id !== id)
 
     if (saveRecoveryLogs(next)) setRecoveryLogs(next)
+  }
+
+  function handleSaveScreening(entry) {
+    const next = [entry, ...screenings]
+    const saved = saveScreenings(next)
+
+    if (saved) setScreenings(next)
+    return saved
+  }
+
+  function handleDeleteScreening(id) {
+    const next = screenings.filter(entry => entry.id !== id)
+
+    if (saveScreenings(next)) setScreenings(next)
+  }
+
+  // Lets wellbeing features add a question to My Care Card,
+  // using the same item shape as the care-card form.
+  function handleAddCareQuestion({ title, details, source }) {
+    const now = new Date().toISOString()
+
+    setCareItems(previous => [
+      {
+        id: createCareId('care'),
+        title,
+        details,
+        explanation: '',
+        category: 'question',
+        source,
+        dueDate: '',
+        dueTime: '',
+        status: 'open',
+        sourceConfirmed: false,
+        calendarEventId: null,
+        createdAt: now,
+        updatedAt: now,
+      },
+      ...previous,
+    ])
+
+    return true
   }
 
   const todaysCheckIn = checkIns.find(
@@ -1575,6 +1628,17 @@ function App() {
             todayKey={todayISO()}
             onSave={handleSaveRecoveryLog}
             onDelete={handleDeleteRecoveryLog}
+          />
+        )}
+
+        {/* WELLNESS CHECK (EPDS) */}
+
+        {activeTab === 'Wellness' && (
+          <WellnessCheck
+            screenings={screenings}
+            onSave={handleSaveScreening}
+            onDelete={handleDeleteScreening}
+            onAddCareQuestion={handleAddCareQuestion}
           />
         )}
 

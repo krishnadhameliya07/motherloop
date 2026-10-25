@@ -171,3 +171,62 @@ export function assessRecovery(log) {
     lowAppetite: log?.appetite === 'None' || log?.appetite === 'Low',
   }
 }
+
+// --------------------------------------------------
+// Wellness check (EPDS) results
+// --------------------------------------------------
+
+const SCREENING_KEY = 'motherloop-screenings-v1'
+const MAX_SCREENINGS = 30
+
+function isValidScreening(entry) {
+  return (
+    entry &&
+    typeof entry === 'object' &&
+    typeof entry.id === 'string' &&
+    typeof entry.timestamp === 'string' &&
+    Array.isArray(entry.answers) &&
+    entry.answers.length === 10 &&
+    entry.answers.every(
+      score => Number.isInteger(score) && score >= 0 && score <= 3
+    )
+  )
+}
+
+// Returns screening results, newest first. The total is always
+// recalculated from the answers so it can never be inconsistent.
+export function loadScreenings() {
+  try {
+    const stored = window.localStorage.getItem(SCREENING_KEY)
+    if (!stored) return []
+
+    const parsed = JSON.parse(stored)
+    if (!Array.isArray(parsed)) return []
+
+    return parsed
+      .filter(isValidScreening)
+      .map(entry => ({
+        id: entry.id,
+        timestamp: entry.timestamp,
+        answers: entry.answers,
+        total: entry.answers.reduce((sum, score) => sum + score, 0),
+      }))
+      .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
+  } catch (error) {
+    console.error('Could not load MotherLoop wellness checks:', error)
+    return []
+  }
+}
+
+export function saveScreenings(screenings) {
+  try {
+    window.localStorage.setItem(
+      SCREENING_KEY,
+      JSON.stringify(screenings.slice(0, MAX_SCREENINGS))
+    )
+    return true
+  } catch (error) {
+    console.error('Could not save MotherLoop wellness checks:', error)
+    return false
+  }
+}
