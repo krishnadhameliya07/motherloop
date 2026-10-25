@@ -1,0 +1,347 @@
+/* ==================================================
+   MotherLoop unified app shell
+   Loaded after App.css. Only styles the layout and
+   navigation; page content keeps its existing styles.
+   ================================================== */
+
+:root {
+  --sidebar-width: 264px;
+  --bottom-nav-height: 68px;
+  --surface: #ffffff;
+  --surface-soft: #fff8fa;
+  --ring: #f3dbe5;
+  --shadow-soft: 0 10px 30px #9b597214;
+}
+
+/* Layout */
+
+.app.shell {
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+}
+
+.shell-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.shell-main > .content {
+  margin-top: 32px;
+}
+
+/* Sidebar (desktop) */
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  padding: 22px 16px 18px;
+  overflow-y: auto;
+  border-right: 1px solid var(--ring);
+  background: #fffdfdeb;
+  backdrop-filter: blur(14px);
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 10px 22px;
+}
+
+.sidebar-brand strong {
+  display: block;
+  color: var(--pink-dark);
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  letter-spacing: -0.4px;
+}
+
+.sidebar-brand div > span {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.brand-mark {
+  display: grid;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #f07fa2, #c9416f);
+  color: white;
+  box-shadow: 0 6px 14px #d94f7a33;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.nav-group-label {
+  padding: 0 12px 6px;
+  color: #a98c9d;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 12px;
+  background: transparent;
+  color: #6d4a61;
+  font-weight: 600;
+  text-align: left;
+}
+
+.nav-item:hover {
+  transform: none;
+  background: var(--surface-soft);
+  color: var(--pink-dark);
+}
+
+.nav-item.active {
+  background: var(--pink-light);
+  color: var(--pink-dark);
+}
+
+.nav-item.active::before {
+  position: absolute;
+  top: 9px;
+  bottom: 9px;
+  left: -16px;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+  background: var(--pink);
+  content: '';
+}
+
+.nav-item .icon {
+  flex-shrink: 0;
+}
+
+.nav-badge {
+  min-width: 22px;
+  margin-left: auto;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--pink);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.sidebar-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.privacy-dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #4caf7d;
+  box-shadow: 0 0 0 3px #4caf7d26;
+}
+
+/* Top bar and bottom bar are mobile only */
+
+.topbar,
+.bottom-nav {
+  display: none;
+}
+
+/* Footer inside the shell */
+
+.shell-main > .footer {
+  margin-top: auto;
+}
+
+/* Mobile and tablet */
+
+@media (max-width: 900px) {
+  .app.shell {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--ring);
+    background: #fffdfdeb;
+    backdrop-filter: blur(14px);
+  }
+
+  .topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .topbar-brand .brand-mark {
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+  }
+
+  .topbar-brand strong {
+    color: var(--pink-dark);
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+  }
+
+  .topbar-title {
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .shell-main {
+    padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .shell-main > .content {
+    margin-top: 22px;
+  }
+
+  .bottom-nav {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 30;
+    display: flex;
+    justify-content: space-around;
+    height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+    padding: 6px 6px env(safe-area-inset-bottom, 0px);
+    border-top: 1px solid var(--ring);
+    background: #fffdfdf2;
+    backdrop-filter: blur(14px);
+  }
+
+  .bottom-nav button {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-width: 0;
+    border-radius: 12px;
+    background: transparent;
+    color: #9a7d8f;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .bottom-nav button:hover {
+    transform: none;
+  }
+
+  .bottom-nav button span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .bottom-nav button.active {
+    color: var(--pink-dark);
+  }
+
+  .bottom-nav button.active .icon {
+    padding: 2px 10px;
+    width: 42px;
+    border-radius: 999px;
+    background: var(--pink-light);
+  }
+
+  .more-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 25;
+    display: flex;
+    align-items: flex-end;
+    background: #49243d33;
+  }
+
+  .more-sheet {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-height: 75vh;
+    margin-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+    padding: 20px 16px;
+    overflow-y: auto;
+    border-radius: 22px 22px 0 0;
+    background: var(--surface);
+    box-shadow: 0 -10px 30px #9b59721f;
+  }
+}
+
+/* Print: never print navigation chrome */
+
+@media print {
+  .sidebar,
+  .topbar,
+  .bottom-nav,
+  .more-sheet-backdrop {
+    display: none !important;
+  }
+
+  .app.shell {
+    display: block !important;
+  }
+
+  .shell-main {
+    padding-bottom: 0 !important;
+  }
+}
