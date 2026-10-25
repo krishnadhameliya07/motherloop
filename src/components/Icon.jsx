@@ -44,6 +44,14 @@ const PATHS = {
       <path d="M7.5 12h2.5l1.2-2 1.8 4 1.2-2h2.3" />
     </>
   ),
+  wellness: (
+    <>
+      <rect x="5" y="4" width="14" height="17" rx="2.5" />
+      <path d="M9 4.5V3h6v1.5" />
+      <path d="M9 11l2 2 4-4" />
+      <path d="M9 17h6" />
+    </>
+  ),
   menu: (
     <>
       <path d="M4 7h16" />

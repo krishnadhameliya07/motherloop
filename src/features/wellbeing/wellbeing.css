@@ -89,9 +89,11 @@
   font-weight: 600;
 }
 
-.mood-option:hover {
-  border-color: #e7b9cc;
-  background: #fff0f5;
+@media (hover: hover) {
+  .mood-option:hover {
+    border-color: #e7b9cc;
+    background: #fff0f5;
+  }
 }
 
 .mood-option.selected {
@@ -337,9 +339,11 @@
   text-align: left;
 }
 
-.symptom-option:hover {
-  border-color: #e7b9cc;
-  background: #fff0f5;
+@media (hover: hover) {
+  .symptom-option:hover {
+    border-color: #e7b9cc;
+    background: #fff0f5;
+  }
 }
 
 .symptom-option.selected {
@@ -423,5 +427,189 @@
 
   .appetite-options {
     gap: 6px;
+  }
+}
+
+/* Wellness check (EPDS) */
+
+.wellness-intro h3,
+.wellness-question h3,
+.wellness-score h3 {
+  margin: 0 0 12px;
+  color: var(--pink-dark);
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+}
+
+.wellness-intro ul {
+  margin: 0 0 8px;
+  padding-left: 20px;
+  color: #5e4255;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.wellness-progress-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.wellness-progress {
+  height: 6px;
+  margin: 10px 0 22px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #f5e6ec;
+}
+
+.wellness-progress > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #e96e94, #ce4674);
+  transition: width 0.3s ease;
+}
+
+.wellness-question .wellness-statement {
+  min-height: 60px;
+  color: var(--text);
+  font-size: clamp(20px, 2.6vw, 25px);
+  line-height: 1.4;
+}
+
+.wellness-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.wellness-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 15px 16px;
+  border: 1px solid #f0dbe5;
+  border-radius: 14px;
+  background: #fffafc;
+  color: #5e4255;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: left;
+}
+
+@media (hover: hover) {
+  .wellness-option:hover {
+    border-color: var(--pink);
+    background: #fff0f5;
+  }
+}
+
+.wellness-option.selected {
+  border-color: var(--pink);
+  background: var(--pink-light);
+  color: var(--pink-dark);
+}
+
+.wellness-option > span {
+  color: #c9a0b3;
+  font-size: 20px;
+}
+
+.wellness-nav {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+
+.wellness-result {
+  margin-top: 4px;
+}
+
+.wellness-score {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.wellness-score p {
+  margin: 0;
+  color: #5e4255;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.wellness-score-number {
+  display: grid;
+  flex-shrink: 0;
+  width: 96px;
+  height: 96px;
+  place-content: center;
+  border-radius: 50%;
+  font-family: 'Playfair Display', serif;
+  font-size: 36px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.wellness-score-number small {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.score-low .wellness-score-number,
+.wellness-mini-score.score-low {
+  background: #ecf8f1;
+  color: #2f6f4c;
+}
+
+.score-medium .wellness-score-number,
+.wellness-mini-score.score-medium {
+  background: #fff4e0;
+  color: #8a5a12;
+}
+
+.score-high .wellness-score-number,
+.wellness-mini-score.score-high {
+  background: #ffebe8;
+  color: #9b2c20;
+}
+
+.wellness-result .form-actions .primary-button,
+.wellness-result .form-actions .secondary-button {
+  margin-top: 0;
+  min-height: 46px;
+}
+
+.wellness-result .status-message {
+  margin-top: 14px;
+}
+
+.wellness-mini-score {
+  display: grid;
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 50%;
+  font-weight: 700;
+}
+
+@media (max-width: 540px) {
+  .wellness-score {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .wellness-score-number {
+    width: 80px;
+    height: 80px;
+    font-size: 30px;
   }
 }
