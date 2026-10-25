@@ -5,7 +5,9 @@ import { readPdf } from './readPdf'
 import { readImage } from './readImage'
 import { saveReport, getReports, deleteReport } from './reportStorage'
 import { loadCareData, saveCareData, createCareId } from './careStorage'
+import AppShell from './components/AppShell'
 import './App.css'
+import './shell.css'
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
@@ -1316,31 +1318,57 @@ function App() {
     item => item.category === 'question' && item.status !== 'resolved'
   ).length
 
-  const tabs = ['Home', 'My Reports', 'Calendar', 'My Care Card']
+  // Tab ids are unchanged from the original navigation, so every
+  // existing `activeTab === '...'` check keeps working.
+  const navGroups = [
+    {
+      label: 'Today',
+      items: [
+        { id: 'Home', label: 'Home', icon: 'home', primary: true },
+      ],
+    },
+    {
+      label: 'My care',
+      items: [
+        {
+          id: 'My Reports',
+          label: 'My Reports',
+          shortLabel: 'Reports',
+          icon: 'reports',
+          primary: true,
+        },
+        {
+          id: 'Calendar',
+          label: 'Calendar',
+          icon: 'calendar',
+          primary: true,
+        },
+        {
+          id: 'My Care Card',
+          label: 'My Care Card',
+          shortLabel: 'Care Card',
+          icon: 'careCard',
+          primary: true,
+          badge: openQuestions || null,
+        },
+      ],
+    },
+  ]
+
+  function handleNavigate(tab) {
+    setActiveTab(tab)
+    setMessage('')
+    if (tab === 'My Reports') loadReports()
+    window.scrollTo({ top: 0 })
+  }
 
   return (
-    <div className={`app ${activeTab === 'My Care Card' ? 'printing-care-card' : ''}`}>
-      <header className="header">
-        <h1>🌸 MotherLoop</h1>
-        <p>Your little companion through motherhood</p>
-      </header>
-
-      <nav className="navigation">
-        {tabs.map(tab => (
-          <button
-            key={tab}
-            className={activeTab === tab ? 'active' : ''}
-            onClick={() => {
-              setActiveTab(tab)
-              setMessage('')
-              if (tab === 'My Reports') loadReports()
-            }}
-          >
-            {tab}
-          </button>
-        ))}
-      </nav>
-
+    <AppShell
+      navGroups={navGroups}
+      activeTab={activeTab}
+      onNavigate={handleNavigate}
+      className={activeTab === 'My Care Card' ? 'printing-care-card' : ''}
+    >
       <main className="content">
         {message && activeTab !== 'My Reports' && (
           <p className="status-message global-message" role="status">
@@ -2644,9 +2672,7 @@ function App() {
           </section>
         )}
       </main>
-
-      <footer className="footer">Made with love for every mama 🌷</footer>
-    </div>
+    </AppShell>
   )
 }
 
