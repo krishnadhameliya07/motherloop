@@ -90,6 +90,14 @@ const PATHS = {
       <path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5" />
     </>
   ),
+  summary: (
+    <>
+      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+      <path d="M14 3v5h5" />
+      <path d="M12 11v6" />
+      <path d="M9 14h6" />
+    </>
+  ),
   menu: (
     <>
       <path d="M4 7h16" />

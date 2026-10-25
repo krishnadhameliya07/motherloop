@@ -1,0 +1,276 @@
+/* Doctor Visit Summary */
+
+.summary-page {
+  max-width: 900px;
+  min-width: 0;
+  margin: 0 auto;
+}
+
+.summary-toolbar h2 {
+  margin: 12px 0 8px;
+  color: var(--pink-dark);
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(30px, 4vw, 40px);
+}
+
+.summary-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 18px;
+  margin: 18px 0 22px;
+}
+
+.summary-controls .checkbox-field {
+  margin: 0;
+}
+
+.summary-controls .primary-button {
+  margin-top: 0;
+  margin-left: auto;
+}
+
+.period-switch {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: #f6eaf0;
+}
+
+.period-switch button {
+  padding: 8px 12px;
+  border-radius: 9px;
+  background: transparent;
+  color: #6d4a61;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.period-switch button:hover {
+  transform: none;
+}
+
+.period-switch button.active {
+  background: white;
+  color: var(--pink-dark);
+  box-shadow: 0 2px 6px #9b597222;
+}
+
+.summary-sheet {
+  padding: 28px 30px;
+  border: 1px solid #ecdde4;
+  border-radius: 20px;
+  background: white;
+  box-shadow: 0 12px 32px #9b597214;
+  color: #2e2430;
+}
+
+.summary-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f0dbe5;
+}
+
+.summary-header h3 {
+  margin: 0 0 4px;
+  color: var(--pink-dark);
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+}
+
+.summary-header span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.summary-header strong {
+  color: var(--pink);
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+}
+
+.summary-empty {
+  margin: 20px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.summary-section {
+  padding: 18px 0;
+  border-bottom: 1px solid #f4e7ed;
+  break-inside: avoid;
+}
+
+.summary-section h4 {
+  margin: 0 0 10px;
+  color: #6b2b4b;
+  font-size: 15px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.summary-warning {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid #f0c3bd;
+  border-radius: 14px;
+  background: #fff1ef;
+  color: #8c2a1f;
+}
+
+.summary-warning h4 {
+  color: #8c2a1f;
+}
+
+.summary-warning ul {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.summary-muted {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.summary-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.summary-stats div {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #fff7fa;
+}
+
+.summary-stats strong {
+  display: block;
+  color: var(--pink-dark);
+  font-size: 18px;
+}
+
+.summary-stats span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.summary-line {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.summary-table th,
+.summary-table td {
+  padding: 7px 8px;
+  border-bottom: 1px solid #f4e7ed;
+  text-align: left;
+  vertical-align: top;
+}
+
+.summary-table th {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.mood-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 22px;
+}
+
+.summary-notes {
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+.summary-notes ul,
+.summary-list {
+  margin: 6px 0 0;
+  padding-left: 20px;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.summary-notes li span {
+  color: var(--muted);
+}
+
+.summary-flag {
+  color: #b3261e;
+  font-weight: 700;
+}
+
+.summary-footer {
+  padding-top: 14px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+@media (max-width: 540px) {
+  .summary-sheet {
+    padding: 18px 16px;
+  }
+
+  .summary-controls .primary-button {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .period-switch button {
+    padding: 8px 8px;
+    font-size: 12px;
+  }
+
+  .summary-table {
+    font-size: 12px;
+  }
+}
+
+/* Print only the summary sheet */
+
+@media print {
+  .app.printing-summary .no-print,
+  .app.printing-summary .status-message,
+  .app.printing-summary .encouragement-banner {
+    display: none !important;
+  }
+
+  .app.printing-summary .content {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .app.printing-summary .summary-sheet {
+    padding: 0;
+    border: none;
+    box-shadow: none;
+  }
+
+  .app.printing-summary .summary-stats div {
+    border: 1px solid #ddd;
+    background: white;
+  }
+}
