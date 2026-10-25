@@ -276,3 +276,152 @@
     width: 100%;
   }
 }
+
+/* Recovery tracker */
+
+.recovery-alert {
+  margin: 20px 0 0;
+  padding: 15px 18px;
+  border: 1px solid;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.recovery-alert strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 15px;
+}
+
+.recovery-alert p {
+  margin: 0;
+}
+
+.alert-urgent {
+  border-color: #b3261e;
+  background: #b3261e;
+  color: white;
+}
+
+.alert-red {
+  border-color: #f0c3bd;
+  background: #fff1ef;
+  color: #8c2a1f;
+}
+
+.alert-amber {
+  border-color: #ead6b3;
+  background: #fff7e8;
+  color: #6b4d1d;
+}
+
+.symptom-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.symptom-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 13px 14px;
+  border: 1px solid #f0dbe5;
+  border-radius: 14px;
+  background: #fffafc;
+  color: #6d4a61;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.symptom-option:hover {
+  border-color: #e7b9cc;
+  background: #fff0f5;
+}
+
+.symptom-option.selected {
+  border-color: var(--pink);
+  background: var(--pink-light);
+  color: var(--pink-dark);
+}
+
+.symptom-check {
+  display: grid;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-left: auto;
+  place-items: center;
+  border: 1.5px solid #e2c3d1;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.symptom-option.selected .symptom-check {
+  border-color: var(--pink);
+  background: var(--pink);
+  color: white;
+}
+
+.field-hint {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.appetite-options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.appetite-options .mood-option {
+  padding: 12px 6px;
+  font-size: 13px;
+}
+
+.recovery-page .form-panel .field-hint + .form-actions {
+  margin-top: 16px;
+}
+
+.sleep-bar-row {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.sleep-bar {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #f5e6ec;
+}
+
+.sleep-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #b68be4, #9060ce);
+}
+
+.sleep-bar > span.low {
+  background: linear-gradient(90deg, #f0a35e, #e07b39);
+}
+
+@media (max-width: 540px) {
+  .symptom-options {
+    grid-template-columns: 1fr;
+  }
+
+  .appetite-options {
+    gap: 6px;
+  }
+}

@@ -77,3 +77,97 @@ export function localDateKey(isoString) {
     String(date.getDate()).padStart(2, '0'),
   ].join('-')
 }
+
+// --------------------------------------------------
+// Recovery tracker (physical check-in), one log per day
+// --------------------------------------------------
+
+const RECOVERY_KEY = 'motherloop-recovery-v1'
+const MAX_RECOVERY_LOGS = 90
+
+export const SYMPTOMS = [
+  { id: 'fever', label: 'Fever', emoji: '🤒' },
+  { id: 'bleeding', label: 'Excess bleeding', emoji: '🩸' },
+  { id: 'pain_c', label: 'C-section / wound pain', emoji: '🤕' },
+  { id: 'pain_b', label: 'Breast pain', emoji: '🤱' },
+]
+
+export const APPETITE_LEVELS = ['None', 'Low', 'Normal', 'Good']
+
+const SYMPTOM_IDS = new Set(SYMPTOMS.map(symptom => symptom.id))
+
+function isValidRecoveryLog(entry) {
+  return (
+    entry &&
+    typeof entry === 'object' &&
+    typeof entry.id === 'string' &&
+    typeof entry.date === 'string' &&
+    /^\d{4}-\d{2}-\d{2}$/.test(entry.date) &&
+    Array.isArray(entry.symptoms) &&
+    Number.isInteger(entry.sleepHours) &&
+    entry.sleepHours >= 0 &&
+    entry.sleepHours <= 12 &&
+    APPETITE_LEVELS.includes(entry.appetite)
+  )
+}
+
+// Returns recovery logs, newest date first.
+export function loadRecoveryLogs() {
+  try {
+    const stored = window.localStorage.getItem(RECOVERY_KEY)
+    if (!stored) return []
+
+    const parsed = JSON.parse(stored)
+    if (!Array.isArray(parsed)) return []
+
+    return parsed
+      .filter(isValidRecoveryLog)
+      .map(entry => ({
+        ...entry,
+        symptoms: entry.symptoms.filter(id => SYMPTOM_IDS.has(id)),
+      }))
+      .sort((a, b) => b.date.localeCompare(a.date))
+  } catch (error) {
+    console.error('Could not load MotherLoop recovery logs:', error)
+    return []
+  }
+}
+
+export function saveRecoveryLogs(logs) {
+  try {
+    window.localStorage.setItem(
+      RECOVERY_KEY,
+      JSON.stringify(logs.slice(0, MAX_RECOVERY_LOGS))
+    )
+    return true
+  } catch (error) {
+    console.error('Could not save MotherLoop recovery logs:', error)
+    return false
+  }
+}
+
+// Rule-based flags, carried over from Fourth Trimester.
+// Shared by the mother's tracker and (later) the family alerts.
+export function assessRecovery(log) {
+  const symptoms = log?.symptoms || []
+  const hasFever = symptoms.includes('fever')
+  const hasBleeding = symptoms.includes('bleeding')
+  const hasPain =
+    symptoms.includes('pain_c') || symptoms.includes('pain_b')
+  const sleepHours = Number.isInteger(log?.sleepHours) ? log.sleepHours : null
+  const isExhausted = sleepHours !== null && sleepHours <= 3
+
+  return {
+    hasFever,
+    hasBleeding,
+    hasPain,
+    // Fever + bleeding + pain together (Fourth Trimester "urgent" rule)
+    isUrgent: hasFever && hasBleeding && hasPain,
+    // Fever or bleeding on its own is still a warning sign
+    hasRedFlag: hasFever || hasBleeding,
+    // "Silent SOS": very little sleep while in pain
+    hasSilentSOS: isExhausted && hasPain,
+    isExhausted,
+    lowAppetite: log?.appetite === 'None' || log?.appetite === 'Low',
+  }
+}
