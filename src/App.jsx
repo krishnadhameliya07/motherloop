@@ -7,9 +7,12 @@ import { saveReport, getReports, deleteReport } from './reportStorage'
 import { loadCareData, saveCareData, createCareId } from './careStorage'
 import AppShell from './components/AppShell'
 import DailyCheckIn from './features/wellbeing/DailyCheckIn'
+import RecoveryTracker from './features/wellbeing/RecoveryTracker'
 import {
   loadCheckIns,
   saveCheckIns,
+  loadRecoveryLogs,
+  saveRecoveryLogs,
   moodFor,
   localDateKey,
 } from './wellbeingStorage'
@@ -179,6 +182,9 @@ function App() {
 
   // Daily check-ins (stored separately from care data)
   const [checkIns, setCheckIns] = useState(() => loadCheckIns())
+
+  // Recovery tracker logs (one per day)
+  const [recoveryLogs, setRecoveryLogs] = useState(() => loadRecoveryLogs())
 
   // Calendar
   const [selectedDate, setSelectedDate] = useState(todayISO)
@@ -1370,6 +1376,17 @@ function App() {
         },
       ],
     },
+    {
+      label: 'Wellbeing',
+      items: [
+        {
+          id: 'Recovery',
+          label: 'Recovery Tracker',
+          shortLabel: 'Recovery',
+          icon: 'recovery',
+        },
+      ],
+    },
   ]
 
   function handleSaveCheckIn(entry) {
@@ -1384,6 +1401,23 @@ function App() {
     const next = checkIns.filter(entry => entry.id !== id)
 
     if (saveCheckIns(next)) setCheckIns(next)
+  }
+
+  function handleSaveRecoveryLog(log) {
+    const next = [
+      log,
+      ...recoveryLogs.filter(entry => entry.date !== log.date),
+    ].sort((a, b) => b.date.localeCompare(a.date))
+    const saved = saveRecoveryLogs(next)
+
+    if (saved) setRecoveryLogs(next)
+    return saved
+  }
+
+  function handleDeleteRecoveryLog(id) {
+    const next = recoveryLogs.filter(entry => entry.id !== id)
+
+    if (saveRecoveryLogs(next)) setRecoveryLogs(next)
   }
 
   const todaysCheckIn = checkIns.find(
@@ -1530,6 +1564,17 @@ function App() {
             todayKey={todayISO()}
             onSave={handleSaveCheckIn}
             onDelete={handleDeleteCheckIn}
+          />
+        )}
+
+        {/* RECOVERY TRACKER */}
+
+        {activeTab === 'Recovery' && (
+          <RecoveryTracker
+            logs={recoveryLogs}
+            todayKey={todayISO()}
+            onSave={handleSaveRecoveryLog}
+            onDelete={handleDeleteRecoveryLog}
           />
         )}
 
