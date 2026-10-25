@@ -16,6 +16,16 @@ const OLLAMA_URL = (
   process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434'
 ).replace(/\/+$/, '')
 
+// Vision model for Nurse AI Vision (photo check).
+const VISION_MODEL = process.env.OLLAMA_VISION_MODEL || 'llava'
+
+// How long to wait for the AI to START answering (loading the model and
+// reading a long report can take minutes on a laptop). Once it is
+// writing, it may continue as long as it keeps producing text.
+const AI_TIMEOUT_MS = Number(process.env.OLLAMA_TIMEOUT_MS) || 600000
+// Give up only if the AI goes silent this long in the middle of a reply.
+const AI_IDLE_TIMEOUT_MS = 120000
+
 const MAX_REPORT_LENGTH = 50000
 const MAX_INSTRUCTION_LENGTH = 5000
 const MAX_ITEMS = 50
@@ -48,7 +58,8 @@ app.use(cors({
   },
 }))
 
-app.use(express.json({ limit: '2mb' }))
+// 8mb leaves room for Nurse AI Vision photos (sent as base64).
+app.use(express.json({ limit: '8mb' }))
 
 // --------------------------------------------------
 // Shared helpers
@@ -202,6 +213,115 @@ function sanitizeExtractedItems(rawItems, reportText) {
 }
 
 // --------------------------------------------------
+// Streaming Ollama helper
+// --------------------------------------------------
+
+class OllamaError extends Error {
+  constructor(message, status = 502) {
+    super(message)
+    this.name = 'OllamaError'
+    this.status = status
+  }
+}
+
+// Calls Ollama with streaming, calling onToken(text) as text arrives.
+// Times out only while waiting to start (AI_TIMEOUT_MS) or if the AI
+// stops producing text mid-reply (AI_IDLE_TIMEOUT_MS) - never just
+// because a slow laptop needs a long time to finish.
+// Returns the full text.
+async function ollamaStream({ path, payload, onToken, cancelSignal }) {
+  const controller = new AbortController()
+  let timedOut = false
+  let timer = setTimeout(() => {
+    timedOut = true
+    controller.abort()
+  }, AI_TIMEOUT_MS)
+
+  const resetIdleTimer = () => {
+    clearTimeout(timer)
+    timer = setTimeout(() => {
+      timedOut = true
+      controller.abort()
+    }, AI_IDLE_TIMEOUT_MS)
+  }
+
+  const onCancel = () => controller.abort()
+  cancelSignal?.addEventListener('abort', onCancel)
+
+  try {
+    const response = await fetch(`${OLLAMA_URL}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
+      body: JSON.stringify({ ...payload, stream: true, keep_alive: '30m' }),
+    })
+
+    if (!response.ok || !response.body) {
+      const data = await response.json().catch(() => ({}))
+      throw new OllamaError(
+        data.error || `Ollama returned HTTP ${response.status}.`
+      )
+    }
+
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+    let fullText = ''
+
+    const handleLine = line => {
+      if (!line.trim()) return
+
+      const chunk = JSON.parse(line)
+      if (chunk.error) throw new OllamaError(chunk.error)
+
+      // /api/generate uses "response"; /api/chat uses "message.content"
+      const text =
+        typeof chunk.response === 'string'
+          ? chunk.response
+          : chunk.message?.content
+
+      if (typeof text === 'string' && text) {
+        fullText += text
+        onToken?.(text)
+      }
+    }
+
+    while (true) {
+      const { value, done } = await reader.read()
+      if (done) break
+
+      resetIdleTimer()
+      buffer += decoder.decode(value, { stream: true })
+
+      let newlineIndex
+      while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
+        handleLine(buffer.slice(0, newlineIndex))
+        buffer = buffer.slice(newlineIndex + 1)
+      }
+    }
+
+    handleLine(buffer)
+    return fullText
+  } catch (error) {
+    if (timedOut) {
+      const timeoutError = new Error('The AI took too long to respond.')
+      timeoutError.name = 'TimeoutError'
+      throw timeoutError
+    }
+    throw error
+  } finally {
+    clearTimeout(timer)
+    cancelSignal?.removeEventListener('abort', onCancel)
+  }
+}
+
+function ollamaErrorMessage(error, timeoutMessage) {
+  if (error.name === 'TimeoutError') return timeoutMessage
+  if (error.name === 'OllamaError') return error.message
+  return 'Could not connect to Ollama. Check that it is running and the model is installed.'
+}
+
+// --------------------------------------------------
 // Health check
 // --------------------------------------------------
 
@@ -235,6 +355,12 @@ app.get('/api/health', async (_req, res) => {
         item.name === `${CHAT_MODEL}:latest`
     )
 
+    const visionModelAvailable = models.some(
+      item =>
+        item.name === VISION_MODEL ||
+        item.name === `${VISION_MODEL}:latest`
+    )
+
     return res.json({
       status: 'online',
       backend: 'online',
@@ -243,6 +369,8 @@ app.get('/api/health', async (_req, res) => {
       modelAvailable,
       chatModel: CHAT_MODEL,
       chatModelAvailable,
+      visionModel: VISION_MODEL,
+      visionModelAvailable,
       installedModels: models.map(item => item.name),
     })
   } catch {
@@ -281,16 +409,22 @@ app.post('/api/explain-report', async (req, res) => {
     })
   }
 
+  // Cancel the AI work if the user leaves or reloads the page.
+  const cancel = new AbortController()
+  res.on('close', () => {
+    if (!res.writableEnded) cancel.abort()
+  })
+
+  let streamStarted = false
+
   try {
-    const response = await fetch(`${OLLAMA_URL}/api/generate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      signal: AbortSignal.timeout(120000),
-      body: JSON.stringify({
+    // The explanation streams to the browser as it is written, so a
+    // slow laptop shows progress instead of timing out.
+    const text = await ollamaStream({
+      path: '/api/generate',
+      cancelSignal: cancel.signal,
+      payload: {
         model: MODEL,
-        stream: false,
         options: {
           temperature: 0,
         },
@@ -316,40 +450,38 @@ ${reportText}
 </document>
 
 Return a concise explanation with clear headings and bullet points.`,
-      }),
+      },
+      onToken: token => {
+        if (!streamStarted) {
+          streamStarted = true
+          res.status(200)
+          res.setHeader('Content-Type', 'text/plain; charset=utf-8')
+          res.setHeader('Cache-Control', 'no-cache')
+        }
+        res.write(token)
+      },
     })
 
-    const data = await response.json().catch(() => ({}))
-
-    if (!response.ok) {
-      return res.status(502).json({
-        error: data.error || `Ollama returned HTTP ${response.status}.`,
-        model: MODEL,
-      })
-    }
-
-    if (
-      typeof data.response !== 'string' ||
-      !data.response.trim()
-    ) {
+    if (!streamStarted || !text.trim()) {
       return res.status(502).json({
         error: 'Ollama returned an empty explanation.',
         model: MODEL,
       })
     }
 
-    return res.json({
-      explanation: data.response.trim(),
-      model: MODEL,
-    })
+    return res.end()
   } catch (error) {
     console.error('Report explanation failed:', error.message)
 
+    // Part of the explanation was already sent; finish what we have.
+    if (streamStarted) return res.end()
+    if (res.headersSent || res.destroyed) return undefined
+
     return res.status(502).json({
-      error:
-        error.name === 'TimeoutError'
-          ? 'The AI request timed out. Try a shorter report.'
-          : 'Could not connect to Ollama. Check that it is running and the model is installed.',
+      error: ollamaErrorMessage(
+        error,
+        'The AI did not respond in time. Make sure Ollama is running, then try again.'
+      ),
       model: MODEL,
     })
   }
@@ -421,37 +553,29 @@ ${reportText}
 DOCUMENT END
 `
 
+  const cancel = new AbortController()
+  res.on('close', () => {
+    if (!res.writableEnded) cancel.abort()
+  })
+
   try {
-    const response = await fetch(`${OLLAMA_URL}/api/generate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      signal: AbortSignal.timeout(120000),
-      body: JSON.stringify({
+    const responseText = await ollamaStream({
+      path: '/api/generate',
+      cancelSignal: cancel.signal,
+      payload: {
         model: MODEL,
-        stream: false,
         format: 'json',
         options: {
           temperature: 0,
         },
         prompt,
-      }),
+      },
     })
-
-    const data = await response.json().catch(() => ({}))
-
-    if (!response.ok) {
-      return res.status(502).json({
-        error: data.error || `Ollama returned HTTP ${response.status}.`,
-        model: MODEL,
-      })
-    }
 
     let parsed
 
     try {
-      parsed = parseModelJson(data.response)
+      parsed = parseModelJson(responseText)
     } catch (error) {
       console.error('Invalid extraction JSON:', error.message)
 
@@ -482,11 +606,13 @@ DOCUMENT END
   } catch (error) {
     console.error('Structured extraction failed:', error.message)
 
+    if (res.headersSent || res.destroyed) return undefined
+
     return res.status(502).json({
-      error:
-        error.name === 'TimeoutError'
-          ? 'Instruction extraction timed out. Try a shorter report.'
-          : 'Could not connect to Ollama or extract structured information.',
+      error: ollamaErrorMessage(
+        error,
+        'Instruction extraction did not respond in time. Make sure Ollama is running, then try again.'
+      ),
       model: MODEL,
     })
   }
@@ -556,36 +682,25 @@ Strict rules:
 Return only the plain-language explanation. Do not include a diagnosis.
 `
 
+  const cancel = new AbortController()
+  res.on('close', () => {
+    if (!res.writableEnded) cancel.abort()
+  })
+
   try {
-    const response = await fetch(`${OLLAMA_URL}/api/generate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      signal: AbortSignal.timeout(120000),
-      body: JSON.stringify({
+    const explanation = await ollamaStream({
+      path: '/api/generate',
+      cancelSignal: cancel.signal,
+      payload: {
         model: MODEL,
-        stream: false,
         options: {
           temperature: 0,
         },
         prompt,
-      }),
+      },
     })
 
-    const data = await response.json().catch(() => ({}))
-
-    if (!response.ok) {
-      return res.status(502).json({
-        error: data.error || `Ollama returned HTTP ${response.status}.`,
-        model: MODEL,
-      })
-    }
-
-    if (
-      typeof data.response !== 'string' ||
-      !data.response.trim()
-    ) {
+    if (!explanation.trim()) {
       return res.status(502).json({
         error: 'The AI returned an empty explanation.',
         model: MODEL,
@@ -593,7 +708,7 @@ Return only the plain-language explanation. Do not include a diagnosis.
     }
 
     return res.json({
-      explanation: data.response.trim(),
+      explanation: explanation.trim(),
       model: MODEL,
       language: 'English',
       notice: 'AI-generated explanation. Compare it with the original instruction and clarify medical uncertainties with your healthcare professional.',
@@ -601,11 +716,13 @@ Return only the plain-language explanation. Do not include a diagnosis.
   } catch (error) {
     console.error('Instruction explanation failed:', error.message)
 
+    if (res.headersSent || res.destroyed) return undefined
+
     return res.status(502).json({
-      error:
-        error.name === 'TimeoutError'
-          ? 'The explanation timed out. Try again.'
-          : 'Could not connect to Ollama. Check that it is running.',
+      error: ollamaErrorMessage(
+        error,
+        'The explanation did not respond in time. Make sure Ollama is running, then try again.'
+      ),
       model: MODEL,
     })
   }
@@ -791,6 +908,152 @@ app.post('/api/companion-chat', async (req, res) => {
 })
 
 // --------------------------------------------------
+// New: Nurse AI Vision (from Fourth Trimester / Saheli)
+// --------------------------------------------------
+
+const MAX_IMAGE_BASE64_LENGTH = 7_000_000
+
+const NURSE_PROMPT = `You are a gentle postpartum nurse assistant inside MotherLoop.
+Look at the photo the mother shared.
+
+1. If you see a FACE: describe only visible signs that may relate to
+   tiredness (for example dark circles, tired-looking eyes, pale skin).
+2. If you see FOOD: comment on how it may support recovery (protein, iron,
+   fruit and vegetables, fluids).
+3. Otherwise describe briefly what you see.
+
+Rules:
+- You are NOT diagnosing. Never name a medical condition.
+- Be kind, encouraging and short (2-4 sentences).
+- If a face is visible, give "fatigue_index" from 1 (rested) to 10 (very
+  tired) based ONLY on what is visible. Otherwise use null.
+- Use "caution" only for clearly visible strong tiredness or a very poor meal.
+  Use "urgent" only if the photo clearly shows something alarming.
+  Otherwise use "stable".
+
+Return ONLY this JSON:
+{
+  "ai_analysis_type": "exhaustion" | "nutrition" | "observation",
+  "ai_insight_text": string,
+  "fatigue_index": number | null,
+  "alert_level": "stable" | "caution" | "urgent"
+}`
+
+app.post('/api/nurse-vision', async (req, res) => {
+  const image =
+    typeof req.body?.image === 'string'
+      ? req.body.image.replace(/^data:image\/[a-z+]+;base64,/i, '')
+      : ''
+
+  if (!image || !/^[A-Za-z0-9+/=\s]+$/.test(image.slice(0, 200))) {
+    return res.status(400).json({ error: 'Please provide a photo.' })
+  }
+
+  console.log(
+    `Nurse vision: photo received (${Math.round(image.length / 1024)} KB), asking ${VISION_MODEL}...`
+  )
+
+  if (image.length > MAX_IMAGE_BASE64_LENGTH) {
+    return res.status(413).json({
+      error: 'This photo is too large. Please use a smaller photo.',
+    })
+  }
+
+  const cancel = new AbortController()
+  res.on('close', () => {
+    if (!res.writableEnded) cancel.abort()
+  })
+
+  try {
+    const raw = await ollamaStream({
+      path: '/api/chat',
+      cancelSignal: cancel.signal,
+      payload: {
+        model: VISION_MODEL,
+        format: 'json',
+        options: {
+          temperature: 0.4,
+        },
+        messages: [
+          { role: 'system', content: NURSE_PROMPT },
+          {
+            role: 'user',
+            content: 'Please look at this photo.',
+            images: [image],
+          },
+        ],
+      },
+    })
+
+    let parsed
+
+    try {
+      parsed = parseModelJson(raw)
+    } catch {
+      parsed = {}
+    }
+
+    const fatigue = Number(parsed.fatigue_index)
+    const insight =
+      typeof parsed.ai_insight_text === 'string'
+        ? parsed.ai_insight_text.trim().slice(0, 800)
+        : ''
+
+    return res.json({
+      ai_analysis_type: ['exhaustion', 'nutrition', 'observation'].includes(
+        parsed.ai_analysis_type
+      )
+        ? parsed.ai_analysis_type
+        : 'observation',
+      ai_insight_text:
+        insight ||
+        "I've looked at your photo, but couldn't see enough detail. Try a well-lit photo of your face or your meal.",
+      fatigue_index:
+        Number.isFinite(fatigue) && fatigue >= 1 && fatigue <= 10
+          ? Math.round(fatigue)
+          : null,
+      alert_level: ['stable', 'caution', 'urgent'].includes(parsed.alert_level)
+        ? parsed.alert_level
+        : 'stable',
+      model: VISION_MODEL,
+    })
+  } catch (error) {
+    console.error('Nurse vision failed:', error.message)
+
+    if (res.headersSent || res.destroyed) return undefined
+
+    return res.status(502).json({
+      error: ollamaErrorMessage(
+        error,
+        'The photo check did not respond in time. Make sure Ollama is running, then try again.'
+      ),
+      model: VISION_MODEL,
+    })
+  }
+})
+
+// --------------------------------------------------
+// Errors from Express itself (e.g. a request body that is too large or
+// not valid JSON) are returned as readable JSON instead of HTML.
+// --------------------------------------------------
+
+// eslint-disable-next-line no-unused-vars
+app.use((error, _req, res, _next) => {
+  console.error('Request failed before reaching a route:', error.message)
+
+  const status = Number(error.status || error.statusCode) || 500
+
+  return res.status(status).json({
+    error:
+      error.type === 'entity.too.large'
+        ? 'This file or photo is too large. Please use a smaller one.'
+        : status === 400
+          ? 'The server could not read this request. Please try again.'
+          : `Server error: ${error.message}`,
+  })
+})
+
+// --------------------------------------------------
 // Start server
 // --------------------------------------------------
 
@@ -798,5 +1061,6 @@ app.listen(PORT, '127.0.0.1', () => {
   console.log(`MotherLoop backend: http://127.0.0.1:${PORT}`)
   console.log(`Configured model: ${MODEL}`)
   console.log(`Companion chat model: ${CHAT_MODEL}`)
+  console.log(`Nurse vision model: ${VISION_MODEL}`)
   console.log(`Ollama URL: ${OLLAMA_URL}`)
 })

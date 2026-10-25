@@ -739,3 +739,156 @@
     height: 120px;
   }
 }
+
+/* Nurse AI Vision */
+
+.nurse-panel {
+  margin-top: 22px;
+}
+
+.nurse-heading h3 {
+  margin: 0 0 6px;
+  color: var(--pink-dark);
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+}
+
+.nurse-heading p {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.nurse-camera {
+  position: relative;
+  display: grid;
+  min-height: 200px;
+  overflow: hidden;
+  place-items: center;
+  border: 2px dashed #ebc9d8;
+  border-radius: 18px;
+  background: #fff8fa;
+}
+
+.nurse-camera.has-media {
+  aspect-ratio: 16 / 10;
+  max-height: 440px;
+}
+
+.nurse-camera video,
+.nurse-camera img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.nurse-empty {
+  padding: 20px;
+  text-align: center;
+}
+
+.nurse-empty > span {
+  font-size: 40px;
+}
+
+.nurse-empty p {
+  margin: 8px 0 14px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.nurse-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.nurse-buttons .primary-button {
+  margin-top: 0;
+}
+
+.nurse-shutter {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  width: 62px;
+  height: 62px;
+  border: 4px solid white;
+  border-radius: 50%;
+  background: var(--pink);
+  box-shadow: 0 6px 18px #0000004d;
+  transform: translateX(-50%);
+}
+
+.nurse-shutter:hover {
+  transform: translateX(-50%) scale(1.05);
+}
+
+.nurse-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #00000080;
+  color: white;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.nurse-analyze {
+  width: 100%;
+  margin-top: 14px;
+}
+
+.nurse-panel .status-message {
+  margin: 14px 0 0;
+}
+
+.nurse-result {
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid #e6dcf5;
+  border-radius: 16px;
+  background: #faf8ff;
+}
+
+.nurse-result.level-caution {
+  border-color: #ead6b3;
+  background: #fff7e8;
+}
+
+.nurse-result.level-urgent {
+  border-color: #f0c3bd;
+  background: #fff1ef;
+}
+
+.nurse-result-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.nurse-result-top > span:first-child {
+  color: #6a48b8;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+}
+
+.nurse-result p {
+  margin: 10px 0 6px;
+  color: #3f2f5c;
+  font-size: 15px;
+  font-style: italic;
+  line-height: 1.6;
+}
+
+.nurse-result .field-hint {
+  font-style: normal;
+}

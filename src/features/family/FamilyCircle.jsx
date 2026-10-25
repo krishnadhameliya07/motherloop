@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { createCareId } from '../../careStorage'
-import { isBreathingActive } from '../../wellbeingStorage'
+import { isBreathingActive, loadNurseLog } from '../../wellbeingStorage'
 import {
   loadEncouragements,
   saveEncouragements,
@@ -70,6 +70,7 @@ export function FamilyAlerts({
 }) {
   const [nowMs, setNowMs] = useState(() => Date.now())
   const [breathing, setBreathing] = useState(() => isBreathingActive())
+  const [nurseLog, setNurseLog] = useState(() => loadNurseLog())
   const [custom, setCustom] = useState('')
   const [status, setStatus] = useState('')
 
@@ -78,6 +79,7 @@ export function FamilyAlerts({
     function refresh() {
       onRefresh()
       setBreathing(isBreathingActive())
+      setNurseLog(loadNurseLog())
       setNowMs(Date.now())
     }
 
@@ -98,6 +100,7 @@ export function FamilyAlerts({
     recoveryLogs,
     checkIns,
     screenings,
+    nurseLog,
     todayKey,
     nowMs,
   })

@@ -375,7 +375,9 @@ function App() {
     }
 
     setLoading(true)
-    setMessage('MotherLoop is explaining your report... 💗')
+    setMessage(
+      'MotherLoop is reading your report... 💗 On a laptop the first words can take a minute or two.'
+    )
     setExplanation('')
 
     try {
@@ -391,20 +393,32 @@ function App() {
         }
       )
 
-      const data = await response.json().catch(() => ({}))
-
-      if (!response.ok) {
+      if (!response.ok || !response.body) {
+        const data = await response.json().catch(() => ({}))
         throw new Error(data.error || 'Could not explain the report.')
       }
 
-      if (
-        typeof data.explanation !== 'string' ||
-        !data.explanation.trim()
-      ) {
+      // The explanation streams in; show it as it is written.
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let text = ''
+
+      while (true) {
+        const { value, done } = await reader.read()
+        if (done) break
+
+        text += decoder.decode(value, { stream: true })
+        setExplanation(text)
+        setMessage('MotherLoop is writing your explanation... 💗')
+      }
+
+      text += decoder.decode()
+
+      if (!text.trim()) {
         throw new Error('The AI returned an empty explanation.')
       }
 
-      setExplanation(data.explanation)
+      setExplanation(text.trim())
       setMessage('')
     } catch (error) {
       console.error('Report explanation failed:', error)
