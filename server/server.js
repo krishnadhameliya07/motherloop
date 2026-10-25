@@ -9,6 +9,9 @@ const app = express()
 
 const PORT = Number(process.env.PORT || 3001)
 const MODEL = process.env.OLLAMA_MODEL || 'llama3:8b'
+// Optional smaller/faster model just for the 3AM Companion chat.
+// Falls back to OLLAMA_MODEL when not set.
+const CHAT_MODEL = process.env.OLLAMA_CHAT_MODEL || MODEL
 const OLLAMA_URL = (
   process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434'
 ).replace(/\/+$/, '')
@@ -226,12 +229,20 @@ app.get('/api/health', async (_req, res) => {
         item.name === `${MODEL}:latest`
     )
 
+    const chatModelAvailable = models.some(
+      item =>
+        item.name === CHAT_MODEL ||
+        item.name === `${CHAT_MODEL}:latest`
+    )
+
     return res.json({
       status: 'online',
       backend: 'online',
       ollama: 'online',
       model: MODEL,
       modelAvailable,
+      chatModel: CHAT_MODEL,
+      chatModelAvailable,
       installedModels: models.map(item => item.name),
     })
   } catch {
@@ -601,11 +612,191 @@ Return only the plain-language explanation. Do not include a diagnosis.
 })
 
 // --------------------------------------------------
+// New: 3AM AI Companion chat (from Fourth Trimester)
+// --------------------------------------------------
+
+// Only the most recent messages are sent, to keep replies fast.
+const MAX_CHAT_MESSAGES = 10
+const MAX_CHAT_MESSAGE_LENGTH = 2000
+
+const COMPANION_SYSTEM_PROMPT = `You are the "3AM Companion" inside MotherLoop, a warm,
+empathetic and supportive companion for mothers in the postpartum period
+(the "fourth trimester", roughly the first 12 weeks after birth).
+
+Your tone is like a wise, kind friend or a gentle doula. Validate her
+feelings, normalise exhaustion, and offer gentle, practical, non-judgemental
+ideas for rest, self-care and asking for help. Celebrate small wins.
+
+Rules:
+1. You are not a doctor. Never diagnose, never prescribe, and never suggest
+   starting, stopping or changing any medication or dose.
+2. If she mentions warning signs such as fever, heavy bleeding, chest pain,
+   difficulty breathing, severe headache, thoughts of harming herself or her
+   baby, or feeling unable to keep herself or her baby safe, gently but
+   clearly tell her to contact her doctor or local emergency services
+   immediately.
+3. Keep replies short (under 120 words), warm and easy to read at night.
+4. You may call her "Mama" occasionally.
+5. Do not claim to remember anything outside this conversation.`
+
+function sanitizeChatMessages(rawMessages) {
+  if (!Array.isArray(rawMessages)) return null
+
+  const messages = rawMessages
+    .slice(-MAX_CHAT_MESSAGES)
+    .filter(
+      item =>
+        item &&
+        (item.role === 'user' || item.role === 'assistant') &&
+        typeof item.content === 'string' &&
+        item.content.trim()
+    )
+    .map(item => ({
+      role: item.role,
+      content: item.content.trim().slice(0, MAX_CHAT_MESSAGE_LENGTH),
+    }))
+
+  if (!messages.length || messages[messages.length - 1].role !== 'user') {
+    return null
+  }
+
+  return messages
+}
+
+app.post('/api/companion-chat', async (req, res) => {
+  const messages = sanitizeChatMessages(req.body?.messages)
+
+  if (!messages) {
+    return res.status(400).json({
+      error: 'Please send a message to the companion.',
+    })
+  }
+
+  // Cancel the Ollama request if the browser disconnects, or if
+  // the whole reply takes longer than 3 minutes.
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 180000)
+
+  res.on('close', () => {
+    if (!res.writableEnded) controller.abort()
+  })
+
+  let streamStarted = false
+
+  try {
+    const response = await fetch(`${OLLAMA_URL}/api/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        model: CHAT_MODEL,
+        // Stream tokens so the reply starts appearing immediately.
+        stream: true,
+        // Keep the model loaded between messages (faster replies).
+        keep_alive: '30m',
+        options: {
+          temperature: 0.7,
+          // Cap reply length; the prompt asks for under 120 words.
+          num_predict: 300,
+        },
+        messages: [
+          { role: 'system', content: COMPANION_SYSTEM_PROMPT },
+          ...messages,
+        ],
+      }),
+    })
+
+    if (!response.ok || !response.body) {
+      const data = await response.json().catch(() => ({}))
+
+      return res.status(502).json({
+        error: data.error || `Ollama returned HTTP ${response.status}.`,
+        model: CHAT_MODEL,
+      })
+    }
+
+    // Ollama streams one JSON object per line; forward only the text.
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+
+    const writeLine = line => {
+      if (!line.trim()) return
+
+      const chunk = JSON.parse(line)
+
+      if (chunk.error) {
+        throw new Error(chunk.error)
+      }
+
+      const text = chunk.message?.content
+
+      if (typeof text === 'string' && text) {
+        if (!streamStarted) {
+          streamStarted = true
+          res.status(200)
+          res.setHeader('Content-Type', 'text/plain; charset=utf-8')
+          res.setHeader('Cache-Control', 'no-cache')
+        }
+
+        res.write(text)
+      }
+    }
+
+    while (true) {
+      const { value, done } = await reader.read()
+      if (done) break
+
+      buffer += decoder.decode(value, { stream: true })
+
+      let newlineIndex
+      while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
+        writeLine(buffer.slice(0, newlineIndex))
+        buffer = buffer.slice(newlineIndex + 1)
+      }
+    }
+
+    writeLine(buffer)
+
+    if (!streamStarted) {
+      return res.status(502).json({
+        error: 'The companion returned an empty reply.',
+        model: CHAT_MODEL,
+      })
+    }
+
+    return res.end()
+  } catch (error) {
+    console.error('Companion chat failed:', error.message)
+
+    if (streamStarted) {
+      // Part of the reply was already sent; just finish it.
+      return res.end()
+    }
+
+    if (res.headersSent || res.destroyed) return undefined
+
+    return res.status(502).json({
+      error:
+        error.name === 'AbortError'
+          ? 'The companion took too long to reply. Please try again.'
+          : 'Could not connect to Ollama. Check that it is running and the model is installed.',
+      model: CHAT_MODEL,
+    })
+  } finally {
+    clearTimeout(timeout)
+  }
+})
+
+// --------------------------------------------------
 // Start server
 // --------------------------------------------------
 
 app.listen(PORT, '127.0.0.1', () => {
   console.log(`MotherLoop backend: http://127.0.0.1:${PORT}`)
   console.log(`Configured model: ${MODEL}`)
+  console.log(`Companion chat model: ${CHAT_MODEL}`)
   console.log(`Ollama URL: ${OLLAMA_URL}`)
 })

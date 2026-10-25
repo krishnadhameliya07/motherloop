@@ -11,6 +11,7 @@ import RecoveryTracker from './features/wellbeing/RecoveryTracker'
 import WellnessCheck from './features/wellbeing/WellnessCheck'
 import CalmCorner from './features/wellbeing/CalmCorner'
 import CommunityForum from './features/community/CommunityForum'
+import CompanionChat from './features/companion/CompanionChat'
 import {
   loadCheckIns,
   saveCheckIns,
@@ -25,6 +26,7 @@ import './App.css'
 import './shell.css'
 import './features/wellbeing/wellbeing.css'
 import './features/community/community.css'
+import './features/companion/companion.css'
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
@@ -2874,6 +2876,8 @@ function App() {
           </section>
         )}
       </main>
+
+      <CompanionChat />
     </AppShell>
   )
 }
