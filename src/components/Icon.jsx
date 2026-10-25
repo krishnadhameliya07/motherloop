@@ -52,6 +52,13 @@ const PATHS = {
       <path d="M9 17h6" />
     </>
   ),
+  calm: (
+    <>
+      <path d="M3 9h11a3 3 0 1 0-3-3" />
+      <path d="M3 13h15a3 3 0 1 1-3 3" />
+      <path d="M3 17h7" />
+    </>
+  ),
   menu: (
     <>
       <path d="M4 7h16" />

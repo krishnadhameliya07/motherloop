@@ -230,3 +230,41 @@ export function saveScreenings(screenings) {
     return false
   }
 }
+
+// --------------------------------------------------
+// Breathing session status (lets Family Circle see
+// "Mom is practising mindfulness", as in Fourth Trimester)
+// --------------------------------------------------
+
+const BREATHING_KEY = 'motherloop-breathing-v1'
+const BREATHING_STALE_MS = 15 * 60 * 1000
+
+export function setBreathingActive(active) {
+  try {
+    window.localStorage.setItem(
+      BREATHING_KEY,
+      JSON.stringify({ active: Boolean(active), updatedAt: Date.now() })
+    )
+  } catch (error) {
+    console.error('Could not save breathing status:', error)
+  }
+}
+
+// A session left "active" (e.g. the tab was closed mid-exercise)
+// is treated as finished after 15 minutes.
+export function isBreathingActive() {
+  try {
+    const stored = JSON.parse(
+      window.localStorage.getItem(BREATHING_KEY) || 'null'
+    )
+
+    return Boolean(
+      stored &&
+        stored.active === true &&
+        typeof stored.updatedAt === 'number' &&
+        Date.now() - stored.updatedAt < BREATHING_STALE_MS
+    )
+  } catch {
+    return false
+  }
+}
