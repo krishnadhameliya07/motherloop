@@ -1,0 +1,222 @@
+/* Community forum (from Fourth Trimester) */
+
+.community-preview-note {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin: 20px 0 0;
+  padding: 12px 15px;
+  border: 1px solid #d9d0f0;
+  border-radius: 14px;
+  background: #f6f2ff;
+  color: #4f3f75;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.composer-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.composer-topic {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.composer-topic select {
+  padding: 9px 11px;
+  border: 1px solid #e8d6df;
+  border-radius: 10px;
+  background: white;
+  color: var(--text);
+}
+
+.composer-count {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.composer-row .primary-button {
+  margin-top: 0;
+}
+
+.community-composer .status-message {
+  margin: 14px 0 0;
+}
+
+.topic-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 18px;
+}
+
+.topic-chip {
+  padding: 8px 13px;
+  border: 1px solid #f0dbe5;
+  border-radius: 999px;
+  background: white;
+  color: #6d4a61;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.topic-chip.active {
+  border-color: var(--pink);
+  background: var(--pink);
+  color: white;
+}
+
+.community-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.community-post {
+  padding: 18px 20px;
+  border: 1px solid #f2dce5;
+  border-radius: 18px;
+  background: white;
+  box-shadow: 0 6px 18px #9b59720a;
+}
+
+.post-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.post-meta strong {
+  color: var(--text);
+  font-size: 13px;
+}
+
+.post-avatar {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--pink-light);
+  font-size: 15px;
+}
+
+.post-topic {
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--lavender-light);
+  color: #6b45a3;
+  font-weight: 700;
+}
+
+.post-example {
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #f1eef3;
+  color: #6f6475;
+  font-weight: 700;
+}
+
+.post-time {
+  margin-left: auto;
+}
+
+.post-text {
+  margin: 12px 0;
+  color: #4a2f42;
+  font-size: 15px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.post-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid #f6e8ee;
+}
+
+.cheer-button.cheered {
+  background: var(--pink-light);
+}
+
+.post-delete {
+  margin-left: auto;
+}
+
+.reply-composer {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.reply-composer input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid #e8d6df;
+  border-radius: 11px;
+}
+
+.reply-composer .primary-button {
+  margin-top: 0;
+  padding: 10px 16px;
+}
+
+.reply-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+  padding-left: 14px;
+  border-left: 3px solid #f6dce7;
+}
+
+.reply {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #fff8fa;
+}
+
+.reply span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.reply p {
+  margin: 4px 0 0;
+  color: #4a2f42;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 540px) {
+  .composer-count {
+    margin-left: 0;
+  }
+
+  .composer-row .primary-button {
+    width: 100%;
+  }
+
+  .post-time {
+    margin-left: 0;
+  }
+}
