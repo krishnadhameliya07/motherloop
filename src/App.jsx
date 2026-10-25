@@ -10,6 +10,7 @@ import DailyCheckIn from './features/wellbeing/DailyCheckIn'
 import RecoveryTracker from './features/wellbeing/RecoveryTracker'
 import WellnessCheck from './features/wellbeing/WellnessCheck'
 import CalmCorner from './features/wellbeing/CalmCorner'
+import CommunityForum from './features/community/CommunityForum'
 import {
   loadCheckIns,
   saveCheckIns,
@@ -23,6 +24,7 @@ import {
 import './App.css'
 import './shell.css'
 import './features/wellbeing/wellbeing.css'
+import './features/community/community.css'
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
@@ -1404,6 +1406,11 @@ function App() {
           shortLabel: 'Calm',
           icon: 'calm',
         },
+        {
+          id: 'Community',
+          label: 'Community',
+          icon: 'community',
+        },
       ],
     },
   ]
@@ -1652,6 +1659,10 @@ function App() {
         {/* CALM CORNER */}
 
         {activeTab === 'Calm' && <CalmCorner />}
+
+        {/* COMMUNITY */}
+
+        {activeTab === 'Community' && <CommunityForum />}
 
         {/* REPORTS */}
 
