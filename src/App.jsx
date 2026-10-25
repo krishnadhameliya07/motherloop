@@ -9,6 +9,7 @@ import AppShell from './components/AppShell'
 import DailyCheckIn from './features/wellbeing/DailyCheckIn'
 import RecoveryTracker from './features/wellbeing/RecoveryTracker'
 import WellnessCheck from './features/wellbeing/WellnessCheck'
+import CalmCorner from './features/wellbeing/CalmCorner'
 import {
   loadCheckIns,
   saveCheckIns,
@@ -1397,6 +1398,12 @@ function App() {
           shortLabel: 'Wellness',
           icon: 'wellness',
         },
+        {
+          id: 'Calm',
+          label: 'Calm Corner',
+          shortLabel: 'Calm',
+          icon: 'calm',
+        },
       ],
     },
   ]
@@ -1641,6 +1648,10 @@ function App() {
             onAddCareQuestion={handleAddCareQuestion}
           />
         )}
+
+        {/* CALM CORNER */}
+
+        {activeTab === 'Calm' && <CalmCorner />}
 
         {/* REPORTS */}
 
