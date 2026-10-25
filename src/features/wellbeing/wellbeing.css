@@ -1,0 +1,278 @@
+/* Wellbeing features (from Fourth Trimester), styled to match MotherLoop */
+
+.checkin-page {
+  max-width: 900px;
+  min-width: 0;
+  margin: 0 auto;
+}
+
+.checkin-page > h2 {
+  margin: 12px 0 8px;
+  color: var(--pink-dark);
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(30px, 4vw, 40px);
+}
+
+/* Affirmation */
+
+.affirmation-card {
+  margin: 22px 0 0;
+  padding: 22px 24px;
+  border: 1px dashed #e7b9cc;
+  border-radius: 22px;
+  background: linear-gradient(120deg, #fff0f5, #fff6ee 60%, #f6edff);
+  text-align: center;
+}
+
+.affirmation-label {
+  color: #bd557a;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+}
+
+.affirmation-card p {
+  margin: 10px auto 8px;
+  max-width: 560px;
+  color: var(--pink-dark);
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(18px, 2.4vw, 22px);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.checkin-today-note {
+  margin: 18px 0 0;
+  padding: 11px 14px;
+  border-radius: 12px;
+  background: #ecf8f1;
+  color: #2f6f4c;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Mood picker */
+
+.mood-fieldset {
+  margin: 0 0 20px;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.mood-fieldset legend {
+  margin-bottom: 12px;
+  padding: 0;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.mood-options {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.mood-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 14px 6px;
+  border: 1px solid #f0dbe5;
+  border-radius: 16px;
+  background: #fffafc;
+  color: #6d4a61;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.mood-option:hover {
+  border-color: #e7b9cc;
+  background: #fff0f5;
+}
+
+.mood-option.selected {
+  border-color: var(--pink);
+  background: var(--pink-light);
+  color: var(--pink-dark);
+  box-shadow: 0 0 0 3px #d94f7a26;
+}
+
+.mood-emoji {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.gentle-support-note {
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  border: 1px solid #ead6b3;
+  border-radius: 14px;
+  background: #fff7e8;
+  color: #6b4d1d;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.gentle-support-note p {
+  margin: 4px 0 0;
+}
+
+/* Stress slider */
+
+.stress-label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.stress-label-row strong {
+  color: var(--pink-dark);
+  font-size: 13px;
+}
+
+.field-label input.stress-slider {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  accent-color: var(--pink);
+  cursor: pointer;
+}
+
+.range-ends {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.checkin-form .status-message {
+  margin: 16px 0 0;
+}
+
+/* History */
+
+.checkin-history {
+  margin-top: 30px;
+}
+
+.checkin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.checkin-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 15px 16px;
+  border: 1px solid #f2dce5;
+  border-radius: 16px;
+  background: white;
+}
+
+.checkin-item-emoji {
+  font-size: 28px;
+  line-height: 1.1;
+}
+
+.checkin-item-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.checkin-item-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+}
+
+.checkin-item-top strong {
+  color: var(--text);
+}
+
+.checkin-item-top span,
+.checkin-item-stress {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.checkin-item-note {
+  margin: 8px 0 0;
+  color: #5e4255;
+  font-size: 14px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+/* Home: check-in prompt */
+
+.home-checkin {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 22px;
+  padding: 18px 22px;
+  border: 1px solid #f2dce5;
+  border-radius: 20px;
+  background: white;
+  box-shadow: 0 9px 28px #9b59720c;
+}
+
+.home-checkin-emoji {
+  font-size: 32px;
+}
+
+.home-checkin div {
+  flex: 1;
+  min-width: 0;
+}
+
+.home-checkin h3 {
+  margin: 0 0 4px;
+  color: var(--pink-dark);
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+}
+
+.home-checkin p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.home-checkin .primary-button {
+  margin-top: 0;
+  flex-shrink: 0;
+}
+
+@media (max-width: 540px) {
+  .mood-options {
+    gap: 6px;
+  }
+
+  .mood-option {
+    padding: 10px 2px;
+    font-size: 10px;
+  }
+
+  .mood-emoji {
+    font-size: 26px;
+  }
+
+  .home-checkin {
+    flex-wrap: wrap;
+  }
+
+  .home-checkin .primary-button {
+    width: 100%;
+  }
+}
